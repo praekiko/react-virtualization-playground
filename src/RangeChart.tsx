@@ -78,12 +78,12 @@ function RangeChart({
         xMin = new Date(new Date(lastXDate.getTime() - 90 * days));
         xMax = lastXDate;
         break;
-      case FilterOption.Year:
-        // eslint-disable-next-line no-case-declarations
-        const year = option.split('-')[1];
-        xMin = new Date(`${year}-01-01T00:00:00`);
-        xMax = new Date(`${year}2022-12-31T00:00:00`);
-        break;
+    }
+
+    if (option.includes(FilterOption.Year)) {
+      const year = option.split('-')[1];
+      xMin = new Date(`${year}-01-01T00:00:00`);
+      xMax = new Date(`${year}-12-31T00:00:00`);
     }
 
     if (!xMax && !xMin) {
