@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import cityTemperature, {
   CityTemperature,
 } from '@visx/mock-data/lib/mocks/cityTemperature';
@@ -7,6 +7,10 @@ import CustomChartBackground from './CustomChartBackground';
 import {
   AnimatedAxis,
   AnimatedLineSeries,
+  Annotation,
+  AnnotationCircleSubject,
+  AnnotationConnector,
+  AnnotationLabel,
   EventHandlerParams,
   lightTheme,
   Tooltip,
@@ -31,6 +35,16 @@ const getDateFormat = (d: CityTemperature) => new Date(d.date);
 const getSfTemperature = (d: CityTemperature) => Number(d['San Francisco']);
 const getNyTemperature = (d: CityTemperature) => Number(d['New York']);
 const getAustinTemperature = (d: CityTemperature) => Number(d.Austin);
+
+type Accessor = (d: CityTemperature) => number | string;
+
+interface Accessors {
+  'San Francisco': Accessor;
+  'New York': Accessor;
+  Austin: Accessor;
+}
+
+type DataKey = keyof Accessors;
 
 export type XYChartProps = {
   width: number;
@@ -63,6 +77,20 @@ export default function MultipleLinesChart({
   brushVersion,
   onClickOnGraph,
 }: XYChartProps) {
+  const defaultAnnotationDataIndex = 13;
+
+  const [annotationDataIndex, setAnnotationDataIndex] = useState(
+    defaultAnnotationDataIndex
+  );
+  const [annotationDataKey, setAnnotationDataKey] = useState<DataKey | null>(
+    null
+  );
+
+  const [annotationLabelPosition, setAnnotationLabelPosition] = useState({
+    dx: -40,
+    dy: -20,
+  });
+
   const config = useMemo(
     () => ({
       x: dateScaleConfig,
@@ -133,7 +161,11 @@ export default function MultipleLinesChart({
       xScale={config.x}
       yScale={config.y}
       height={height}
-      onPointerDown={onClickOnGraph}
+      onPointerUp={(d: EventHandlerParams<CityTemperature>) => {
+        setAnnotationDataKey(d.key as 'New York' | 'San Francisco' | 'Austin');
+        setAnnotationDataIndex(d.index);
+        onClickOnGraph && onClickOnGraph(d);
+      }}
     >
       <CustomChartBackground />
 
@@ -181,6 +213,30 @@ export default function MultipleLinesChart({
           // values don't make sense in stream graph
           tickFormat={undefined}
         />
+      )}
+
+      {annotationDataKey && data[annotationDataIndex] && (
+        <Annotation
+          dataKey={annotationDataKey}
+          datum={data[annotationDataIndex]}
+          dx={annotationLabelPosition.dx}
+          dy={annotationLabelPosition.dy}
+          canEditSubject={false}
+          onDragEnd={({ dx, dy }) => setAnnotationLabelPosition({ dx, dy })}
+        >
+          <AnnotationConnector />
+          <AnnotationCircleSubject />
+          <AnnotationLabel
+            title={annotationDataKey}
+            subtitle={`${data[annotationDataIndex].date}, ${data[annotationDataIndex][annotationDataKey]}°F`}
+            width={135}
+            backgroundProps={{
+              stroke: lightTheme.gridStyles.stroke,
+              strokeOpacity: 0.5,
+              fillOpacity: 0.8,
+            }}
+          />
+        </Annotation>
       )}
 
       {!hideTooltip && (

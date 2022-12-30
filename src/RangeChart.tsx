@@ -60,13 +60,11 @@ function RangeChart({
   );
 
   const filterDataByOption = (option: FilterOption) => {
-    const firstXDate = getDate(cityTemperatureData[0]);
     const lastXDate = getDate(
       cityTemperatureData[cityTemperatureData.length - 1]
     );
 
-    let xMin = firstXDate;
-    let xMax = lastXDate;
+    let xMin: Date | undefined, xMax: Date | undefined;
     switch (option) {
       case FilterOption.Last7Days:
         xMin = new Date(new Date(lastXDate.getTime() - 7 * days));
@@ -86,16 +84,16 @@ function RangeChart({
         xMin = new Date(`${year}-01-01T00:00:00`);
         xMax = new Date(`${year}2022-12-31T00:00:00`);
         break;
-      default:
-        xMin = firstXDate;
-        xMax = lastXDate;
-        break;
+    }
+
+    if (!xMax && !xMin) {
+      return filteredCityTemperature;
     }
 
     return cityTemperatureData.filter((s) => {
       const x = getDate(s).getTime();
 
-      return x >= xMin.getTime() && x <= xMax.getTime();
+      return x >= xMin!.getTime() && x <= xMax!.getTime();
     });
   };
 
