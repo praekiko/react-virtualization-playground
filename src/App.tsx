@@ -3,6 +3,7 @@ import ParentSize from '@visx/responsive/lib/components/ParentSize';
 import MultipleLinesChartWithControls from './MultipleLinesChartWithControls';
 import BrushChart from './BrushChart';
 import RangeChart from './RangeChart';
+import RangeChartWithTable from './RangeChartWithTable';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
         {({ width, height }) => (
           <>
             <h1>🎉 Graph & Table</h1>
+            <RangeChartWithTable width={width} height={400} />
 
             <h1>🔎 Zoom</h1>
             <h2>Zoom by date range version</h2>
@@ -73,7 +75,7 @@ function App() {
               }
 
               .app-container {
-                padding: 5rem 12rem;
+                padding: 2rem 12rem;
                 background-color: #fafafa;
               }
             `}</style>

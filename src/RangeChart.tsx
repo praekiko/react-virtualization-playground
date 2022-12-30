@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { CityTemperature } from '@visx/mock-data/lib/mocks/cityTemperature';
 import MultipleLinesChart, { cityTemperatureData } from './MultipleLinesChart';
+import { EventHandlerParams } from '@visx/xychart';
 
 // accessors
 const getDate = (d: CityTemperature) => new Date(d.date);
@@ -13,14 +14,20 @@ enum FilterOption {
   Custom = 'Custom',
 }
 
-const DefaultFilterOption = FilterOption.Last90Days;
 const days = 24 * 60 * 60 * 1000;
 
-export type BrushProps = {
+interface ProvidedProps {
+  data: CityTemperature[];
+  focused?: CityTemperature;
+  onFocus: (data: CityTemperature) => void;
+}
+
+type RangeProps = {
   width: number;
   height: number;
   margin?: { top: number; right: number; bottom: number; left: number };
   compact?: boolean;
+  children?: (props: ProvidedProps) => React.ReactNode;
 };
 
 function RangeChart({
@@ -33,7 +40,16 @@ function RangeChart({
     bottom: 20,
     right: 20,
   },
-}: BrushProps) {
+  children,
+}: RangeProps) {
+  const DefaultFilterOption = compact
+    ? FilterOption.Last7Days
+    : FilterOption.Last90Days;
+
+  const [focusedCityTemperature, setFocusedCityTemperature] = useState<
+    CityTemperature | undefined
+  >();
+  const [customFilterOption, setCustomFilterOption] = useState('');
   const [filterOption, setFilterOption] = useState(DefaultFilterOption);
   const [filteredCityTemperature, setFilteredCityTemperature] =
     useState(cityTemperatureData);
@@ -90,6 +106,8 @@ function RangeChart({
   const onFilterSelectChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const option = event.target.value as FilterOption;
     setFilterOption(option);
+    setCustomFilterOption('');
+    setFocusedCityTemperature(undefined);
   };
 
   const onZoomOut = () => {
@@ -108,12 +126,43 @@ function RangeChart({
     });
 
     setFilteredCityTemperature(zoomedOutData);
+    setCustomFilterOption(
+      `${zoomedOutData[0].date} - ${
+        zoomedOutData[zoomedOutData.length - 1].date
+      }`
+    );
+    setFocusedCityTemperature(undefined);
   };
 
   // event handlers
   const handleClearClick = () => {
     setFilteredCityTemperature(cityTemperatureData);
     setFilterOption(DefaultFilterOption);
+    setFocusedCityTemperature(undefined);
+    setCustomFilterOption('');
+  };
+
+  const onFocus = (data: CityTemperature) => {
+    const xMin = new Date(new Date(getDate(data).getTime() - 3 * days));
+    const xMax = new Date(new Date(getDate(data).getTime() + 3 * days));
+
+    const zoomedOutData = cityTemperatureData.filter((s) => {
+      const x = getDate(s).getTime();
+
+      return x >= xMin.getTime() && x <= xMax.getTime();
+    });
+
+    setCustomFilterOption(
+      `${zoomedOutData[0].date} - ${
+        zoomedOutData[zoomedOutData.length - 1].date
+      }`
+    );
+    setFilteredCityTemperature(zoomedOutData);
+    setFocusedCityTemperature(data);
+  };
+
+  const onFocusOnGraph = ({ datum }: EventHandlerParams<CityTemperature>) => {
+    onFocus(datum);
   };
 
   return (
@@ -122,10 +171,14 @@ function RangeChart({
         <select
           name="filter"
           className="filter-select-control"
-          value={filterOption}
+          value={customFilterOption === '' ? filterOption : customFilterOption}
           onChange={onFilterSelectChange}
         >
-          <option value="">--Please choose a date range--</option>
+          <option value="">
+            {customFilterOption === ''
+              ? '--Please choose a date range--'
+              : customFilterOption}
+          </option>
           <option value={FilterOption.Last7Days}>Last 7 days</option>
           <option value={FilterOption.Last28Days}>Last 28 days</option>
           <option value={FilterOption.Last90Days}>Last 90 days</option>
@@ -146,12 +199,21 @@ function RangeChart({
         </button>
         &nbsp;
       </div>
+
       <MultipleLinesChart
         data={filteredCityTemperature}
         width={width}
         height={height}
         margin={margin}
+        onClickOnGraph={onFocusOnGraph}
       />
+
+      {children &&
+        children({
+          data: filteredCityTemperature,
+          focused: focusedCityTemperature,
+          onFocus: onFocus,
+        })}
 
       <style>{`
         .filter-select-control {

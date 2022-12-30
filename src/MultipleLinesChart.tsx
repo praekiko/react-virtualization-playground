@@ -7,6 +7,7 @@ import CustomChartBackground from './CustomChartBackground';
 import {
   AnimatedAxis,
   AnimatedLineSeries,
+  EventHandlerParams,
   lightTheme,
   Tooltip,
   XYChart,
@@ -43,6 +44,7 @@ export type XYChartProps = {
   xScale?: AxisScale<number>;
   yScale?: AxisScale<number>;
   brushVersion?: boolean;
+  onClickOnGraph?: (data: EventHandlerParams<CityTemperature>) => void;
 };
 
 type City = 'San Francisco' | 'New York' | 'Austin';
@@ -59,6 +61,7 @@ export default function MultipleLinesChart({
   xScale,
   yScale,
   brushVersion,
+  onClickOnGraph,
 }: XYChartProps) {
   const config = useMemo(
     () => ({
@@ -130,6 +133,7 @@ export default function MultipleLinesChart({
       xScale={config.x}
       yScale={config.y}
       height={height}
+      onPointerDown={onClickOnGraph}
     >
       <CustomChartBackground />
 
@@ -159,7 +163,7 @@ export default function MultipleLinesChart({
         <AnimatedAxis
           key={`time-axis-min`}
           orientation={'bottom'}
-          numTicks={width < 1000 ? numTicks : numTicks * 2}
+          numTicks={width < 1500 ? numTicks : numTicks * 2}
           animationTrajectory={'min'}
           tickFormat={(v: Date, i: number) =>
             i === 3 ? '🌈' : i === 1 ? '✅' : `${v}`
