@@ -82,39 +82,15 @@ function BrushChart({
   const bottomChartHeight = innerHeight - topChartHeight - chartSeparation;
 
   // bounds
-  const xMax = Math.max(width - margin.left - margin.right, 0);
-  const yMax = Math.max(topChartHeight, 0);
-  const xBrushMax = Math.max(width - brushMargin.left - brushMargin.right, 0);
+  const xBrushMax = Math.max(
+    width - brushMargin.left - brushMargin.left - brushMargin.right,
+    0
+  );
   const yBrushMax = Math.max(
     bottomChartHeight - brushMargin.top - brushMargin.bottom,
     0
   );
 
-  // scales
-  const dateScale = useMemo(
-    () =>
-      scaleTime<number>({
-        range: [0, xMax],
-        domain: extent(filteredCityTemperature, getDate) as [Date, Date],
-      }),
-    [xMax, filteredCityTemperature]
-  );
-  const temperatureScale = useMemo(
-    () =>
-      scaleLinear<number>({
-        range: [yMax, 0],
-        domain: [
-          0,
-          Math.max(
-            max(filteredCityTemperature, getSfTemperature) || 0,
-            max(filteredCityTemperature, getNyTemperature) || 0,
-            max(filteredCityTemperature, getAustinTemperature) || 0
-          ),
-        ],
-        nice: true,
-      }),
-    [yMax, filteredCityTemperature]
-  );
   const brushDateScale = useMemo(
     () =>
       scaleTime<number>({
@@ -186,7 +162,7 @@ function BrushChart({
   };
 
   return (
-    <div>
+    <div className={`${compact ? 'graph-container-sm' : 'graph-container'}`}>
       {height >= 300 && (
         <div className="control-container">
           <button className="control-btn" onClick={handleClearClick}>
@@ -199,7 +175,6 @@ function BrushChart({
         </div>
       )}
       <MultipleLinesChart
-        hideBottomAxis={compact}
         data={filteredCityTemperature}
         width={width}
         height={height - yBrushMax}
@@ -247,7 +222,6 @@ function BrushChart({
           </MultipleLinesChart>
         </>
       )}
-
       <style>{`
         .control-container {
           text-align: right;

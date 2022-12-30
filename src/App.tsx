@@ -1,39 +1,37 @@
 import React from 'react';
 import ParentSize from '@visx/responsive/lib/components/ParentSize';
 import MultipleLinesChartWithControls from './MultipleLinesChartWithControls';
-import './App.css';
 import BrushChart from './BrushChart';
 import RangeChart from './RangeChart';
 
 function App() {
   return (
-    <div className="App">
+    <div className="app-container">
       <ParentSize>
         {({ width, height }) => (
           <>
-            <h1>Graph & Table</h1>
+            <h1>🎉 Graph & Table</h1>
 
-            <h1>Zoom</h1>
+            <h1>🔎 Zoom</h1>
             <h2>Zoom by date range version</h2>
             <RangeChart width={width} height={400} />
             <h2>Brush version</h2>
             <BrushChart width={width} height={400} />
 
-            <h1>Responsive layout</h1>
+            <h1>📐 Responsive layout</h1>
             <div className="wrapper">
               <div className="one">
-                <BrushChart width={width / 2} height={300} />
+                <BrushChart width={width / 2} height={380} />
               </div>
               <div className="two">
-                <BrushChart width={width / 2} height={150} />
+                <RangeChart compact width={width / 2} height={150} />
               </div>
               <div className="three">
-                <BrushChart width={width / 2} height={150} />
+                <BrushChart compact width={width / 2} height={150} />
               </div>
             </div>
 
-            <h1>Playground</h1>
-
+            <h1>🌈 Playground</h1>
             <h2>Line graphs with controls</h2>
             <MultipleLinesChartWithControls width={width} height={height} />
 
@@ -41,8 +39,9 @@ function App() {
               .wrapper {
                 width: 100%;
                 display: grid;
-                grid-template-columns: repeat(auto-fit,minmax(400px,1fr));
+                grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
                 overflow-x: hidden;
+                grid-gap: 1rem;
               }
               .one {
                 grid-column: 1;
@@ -55,6 +54,27 @@ function App() {
               .three {
                 grid-column: 2;
                 grid-row: 2 / 3;
+              }
+
+              .graph-container {
+                background-color: #fff;
+                border-radius: 1rem;
+                padding: 2rem;
+              }
+
+              .graph-container-sm {
+                background-color: #fff;
+                border-radius: 1rem;
+                padding: 2rem 1rem;
+              }
+
+              .controls {
+                padding: 2rem;
+              }
+
+              .app-container {
+                padding: 5rem 12rem;
+                background-color: #fafafa;
               }
             `}</style>
           </>

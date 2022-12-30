@@ -117,7 +117,7 @@ function RangeChart({
   };
 
   return (
-    <div>
+    <div className={`${compact ? 'graph-container-sm' : 'graph-container'}`}>
       <div className="control-container">
         <select
           name="filter"
@@ -147,7 +147,6 @@ function RangeChart({
         &nbsp;
       </div>
       <MultipleLinesChart
-        hideBottomAxis={compact}
         data={filteredCityTemperature}
         width={width}
         height={height}

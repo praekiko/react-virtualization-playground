@@ -15,7 +15,7 @@ import { RenderTooltipGlyphProps } from '@visx/xychart/lib/components/Tooltip';
 
 export const dateScaleConfig = { type: 'band', paddingInner: 0.3 } as const;
 export const temperatureScaleConfig = { type: 'linear' } as const;
-const numTicks = 4;
+const numTicks = 5;
 const data = cityTemperature.slice(225, 375);
 const dataMissingValues = data.map((d, i) =>
   i === 10 || i === 11

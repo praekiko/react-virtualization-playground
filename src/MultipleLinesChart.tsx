@@ -20,7 +20,7 @@ import { Group } from '@visx/group';
 import { AxisScale } from '@visx/axis';
 import { LinePath } from '@visx/shape';
 
-const numTicks = 4;
+const numTicks = 5;
 export const cityTemperatureData: CityTemperature[] = cityTemperature.slice(
   225,
   375
@@ -86,12 +86,14 @@ export default function MultipleLinesChart({
   );
 
   if (brushVersion && xScale && yScale) {
+    const widthAfterMargin = Math.max(width - margin.right - margin.left, 0);
     return (
-      <svg width={width} height={height}>
+      <svg width={widthAfterMargin} height={height}>
         <Group left={margin.left}>
           <rect
-            width={width - margin.right - margin.left}
+            width={widthAfterMargin}
             height={height}
+            stroke="#e4e4e4"
             fill="#f6f6f6"
           />
           <LinePath
@@ -99,21 +101,21 @@ export default function MultipleLinesChart({
             x={(d) => xScale(getDateFormat(d)) || 0}
             y={(d) => yScale(getSfTemperature(d)) || 0}
             strokeWidth={1.5}
-            stroke="#715cc6"
+            stroke="rgba(255,231,143,0.8)"
           />
           <LinePath
             data={data}
             x={(d) => xScale(getDateFormat(d)) || 0}
             y={(d) => yScale(getNyTemperature(d)) || 0}
             strokeWidth={1.5}
-            stroke="#ffce2c"
+            stroke="#6a097d"
           />
           <LinePath
             data={data}
             x={(d) => xScale(getDateFormat(d)) || 0}
             y={(d) => yScale(getAustinTemperature(d)) || 0}
             strokeWidth={1.5}
-            stroke="#4a9cc1"
+            stroke="#d6e0f0"
           />
 
           {children}
@@ -123,111 +125,109 @@ export default function MultipleLinesChart({
   }
 
   return (
-    <>
-      <XYChart
-        theme={lightTheme}
-        xScale={config.x}
-        yScale={config.y}
-        height={height}
-        margin={margin}
-      >
-        <CustomChartBackground fill={hideBottomAxis ? '#f2f2f2' : undefined} />
+    <XYChart
+      theme={lightTheme}
+      xScale={config.x}
+      yScale={config.y}
+      height={height}
+    >
+      <CustomChartBackground />
 
-        <AnimatedLineSeries
-          dataKey="Austin"
-          data={data}
-          xAccessor={accessors.x.Austin}
-          yAccessor={accessors.y.Austin}
-          curve={curveLinear}
+      <AnimatedLineSeries
+        dataKey="Austin"
+        data={data}
+        xAccessor={accessors.x.Austin}
+        yAccessor={accessors.y.Austin}
+        curve={curveLinear}
+      />
+      <AnimatedLineSeries
+        dataKey="New York"
+        data={data}
+        xAccessor={accessors.x['New York']}
+        yAccessor={accessors.y['New York']}
+        curve={curveLinear}
+      />
+      <AnimatedLineSeries
+        dataKey="San Francisco"
+        data={data}
+        xAccessor={accessors.x['San Francisco']}
+        yAccessor={accessors.y['San Francisco']}
+        curve={curveLinear}
+      />
+
+      {!hideBottomAxis && (
+        <AnimatedAxis
+          key={`time-axis-min`}
+          orientation={'bottom'}
+          numTicks={width < 1000 ? numTicks : numTicks * 2}
+          animationTrajectory={'min'}
+          tickFormat={(v: Date, i: number) =>
+            i === 3 ? '🌈' : i === 1 ? '✅' : `${v}`
+          }
+          // rangePadding={{ start: margin.left, end: margin.right }}
         />
-        <AnimatedLineSeries
-          dataKey="New York"
-          data={data}
-          xAccessor={accessors.x['New York']}
-          yAccessor={accessors.y['New York']}
-          curve={curveLinear}
+      )}
+      {!hideLeftAxis && (
+        <AnimatedAxis
+          key={`temp-axis-min`}
+          label={'Temperature (°F)'}
+          orientation={'left'}
+          numTicks={numTicks}
+          animationTrajectory={'min'}
+          // values don't make sense in stream graph
+          tickFormat={undefined}
         />
-        <AnimatedLineSeries
-          dataKey="San Francisco"
-          data={data}
-          xAccessor={accessors.x['San Francisco']}
-          yAccessor={accessors.y['San Francisco']}
-          curve={curveLinear}
+      )}
+
+      {!hideTooltip && (
+        <Tooltip<CityTemperature>
+          showHorizontalCrosshair={false}
+          showVerticalCrosshair={true}
+          snapTooltipToDatumX={true}
+          snapTooltipToDatumY={true}
+          showDatumGlyph={true}
+          showSeriesGlyphs={true}
+          renderGlyph={undefined}
+          renderTooltip={({ tooltipData, colorScale }) => (
+            <>
+              {(tooltipData?.nearestDatum?.datum &&
+                accessors.date(tooltipData?.nearestDatum?.datum)) ||
+                'No date'}
+              <br />
+              <br />
+
+              {(
+                Object.keys(tooltipData?.datumByKey ?? {}).filter(
+                  (city) => city
+                ) as City[]
+              ).map((city) => {
+                const temperature =
+                  tooltipData?.nearestDatum?.datum &&
+                  accessors['y'][city](tooltipData?.nearestDatum?.datum);
+
+                return (
+                  <div key={city}>
+                    <em
+                      style={{
+                        color: colorScale?.(city),
+                        textDecoration:
+                          tooltipData?.nearestDatum?.key === city
+                            ? 'underline'
+                            : undefined,
+                      }}
+                    >
+                      {city}
+                    </em>{' '}
+                    {temperature == null || Number.isNaN(temperature)
+                      ? '–'
+                      : `${temperature}° F`}
+                  </div>
+                );
+              })}
+            </>
+          )}
         />
-
-        {!hideBottomAxis && (
-          <AnimatedAxis
-            key={`time-axis-min`}
-            orientation={'bottom'}
-            numTicks={width < 1000 ? numTicks : numTicks * 2}
-            animationTrajectory={'min'}
-            tickFormat={(v: Date, i: number) =>
-              i === 3 ? '🌈' : i === 1 ? '✅' : `${v}`
-            }
-          />
-        )}
-        {!hideLeftAxis && (
-          <AnimatedAxis
-            key={`temp-axis-min`}
-            label={'Temperature (°F)'}
-            orientation={'left'}
-            numTicks={numTicks}
-            animationTrajectory={'min'}
-            // values don't make sense in stream graph
-            tickFormat={undefined}
-          />
-        )}
-
-        {!hideTooltip && (
-          <Tooltip<CityTemperature>
-            showHorizontalCrosshair={false}
-            showVerticalCrosshair={true}
-            snapTooltipToDatumX={true}
-            snapTooltipToDatumY={true}
-            showDatumGlyph={true}
-            showSeriesGlyphs={true}
-            renderGlyph={undefined}
-            renderTooltip={({ tooltipData, colorScale }) => (
-              <>
-                {(tooltipData?.nearestDatum?.datum &&
-                  accessors.date(tooltipData?.nearestDatum?.datum)) ||
-                  'No date'}
-                <br />
-                <br />
-
-                {(
-                  Object.keys(tooltipData?.datumByKey ?? {}).filter(
-                    (city) => city
-                  ) as City[]
-                ).map((city) => {
-                  const temperature =
-                    tooltipData?.nearestDatum?.datum &&
-                    accessors['y'][city](tooltipData?.nearestDatum?.datum);
-
-                  return (
-                    <div key={city}>
-                      <em
-                        style={{
-                          color: colorScale?.(city),
-                          textDecoration:
-                            tooltipData?.nearestDatum?.key === city
-                              ? 'underline'
-                              : undefined,
-                        }}
-                      >
-                        {city}
-                      </em>{' '}
-                      {temperature == null || Number.isNaN(temperature)
-                        ? '–'
-                        : `${temperature}° F`}
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          />
-        )}
-      </XYChart>
-    </>
+      )}
+    </XYChart>
   );
 }
