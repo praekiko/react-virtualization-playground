@@ -2,7 +2,7 @@
   "name": "react-virtualization-playground",
   "version": "0.1.0",
   "private": false,
-  "main": "index.js",
+  "main": "src/index.tsx",
   "author": "praekiko",
   "license": "MIT",
   "scripts": {
