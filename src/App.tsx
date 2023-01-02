@@ -75,7 +75,7 @@ function App() {
               }
 
               .app-container {
-                padding: 2rem 12rem;
+                padding: 2rem 10rem;
                 background-color: #fafafa;
               }
             `}</style>
