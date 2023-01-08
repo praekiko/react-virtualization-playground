@@ -109,6 +109,8 @@ function RangeChart({
   };
 
   const onZoomOut = () => {
+    setFilterOption(FilterOption.Custom);
+
     const firstXDate = getDate(filteredCityTemperature[0]);
     const lastXDate = getDate(
       filteredCityTemperature[filteredCityTemperature.length - 1]
@@ -134,10 +136,9 @@ function RangeChart({
 
   // event handlers
   const handleClearClick = () => {
-    setFilteredCityTemperature(cityTemperatureData);
     setFilterOption(DefaultFilterOption);
-    setFocusedCityTemperature(undefined);
     setCustomFilterOption('');
+    setFocusedCityTemperature(undefined);
   };
 
   const onFocus = (data: CityTemperature) => {
@@ -150,6 +151,7 @@ function RangeChart({
       return x >= xMin.getTime() && x <= xMax.getTime();
     });
 
+    setFilterOption(FilterOption.Custom);
     setCustomFilterOption(
       `${zoomedOutData[0].date} - ${
         zoomedOutData[zoomedOutData.length - 1].date
